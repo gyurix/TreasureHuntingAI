@@ -108,9 +108,9 @@ def format_mutations(ms, with_ids=True):
         "'", "").replace('mutation_', '').replace('_', ' ')[1:-1]
 
 
-def run_ai(map, max_iterations=-1, instances=50, keep=5,
+def run_ai(map, max_iterations=-1, instances=25, keep=1,
            cross_chance=0.2, mutations=ALL_MUTATION, crossovers=ALL_CROSSOVER,
-           debug_generations=True, debug_operations=False, debug_from_to=False, debug_exact_steps=False):
+           debug_generations=False, debug_operations=False, debug_from_to=False, debug_exact_steps=False):
     if map is None:
         print('Map is not set.')
         return
@@ -130,9 +130,10 @@ def run_ai(map, max_iterations=-1, instances=50, keep=5,
 
         iterations += 1
         if score[-1].score == len(map.rewards):
-            print('This is the ', iterations, '. generation.\nSuccesfully collected all the ', score[-1].score,
-                  ' points. \nIt is reached by program ', score[-1].original, '.', sep='')
-            return score[-1].original
+            if max_iterations == -1:
+                print('This is the ', iterations, '. generation.\nSuccesfully collected all the ', score[-1].score,
+                      ' points. \nIt is reached by program ', score[-1].original, '.', sep='')
+            return score[-1]
         if max_iterations == -1 and score[-1].score > last_score:
             last_score = score[-1].score
             print('This is the ', iterations, '. generation.\nThe best score is ', score[-1].score,
@@ -140,10 +141,10 @@ def run_ai(map, max_iterations=-1, instances=50, keep=5,
             cont = input('Should we try to find a better one? (y = yes): ')
             print('')
             if cont.lower() != 'y':
-                return score[-1].original
+                return score[-1]
         elif iterations == max_iterations:
-            print('Reached iteration limit.')
-            return score[-1].original
+            # print('Reached iteration limit.')
+            return score[-1]
 
         for i in range(instances - keep):
             if random() <= cross_chance:
