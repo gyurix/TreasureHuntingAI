@@ -6,7 +6,7 @@
 ## Installation
 
 - Install all the dependencies from the `requirements.txt`
-- Run the program `python3 main.py [optional]`
+- Run the program `python3 main.py [filename]`
 
 ## Automatic testing
 
