@@ -131,7 +131,7 @@ def run_ai(map, max_iterations=-1, instances=25, keep=1,
         iterations += 1
         if score[-1].score == len(map.rewards):
             if max_iterations == -1:
-                print('This is the ', iterations, '. generation.\nSuccesfully collected all the ', score[-1].score,
+                print('This is the  ', iterations, '. generation.\nSuccesfully collected all the ', score[-1].score,
                       ' points. \nIt is reached by program ', score[-1].original, '.', sep='')
             return score[-1]
         if max_iterations == -1 and score[-1].score > last_score:
