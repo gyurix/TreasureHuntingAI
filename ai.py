@@ -78,10 +78,6 @@ def format_mutations(ms, with_ids=True):
         "'", "").replace('mutation_', '').replace('_', ' ')[1:-1]
 
 
-def get_program_score_rank(pr):
-    return pr.score
-
-
 def run_ai(map, max_iterations=-1, instances=50, keep=5,
            cross_chance=0.2, mutations=ALL_MUTATION, crossovers=ALL_CROSSOVER):
     if map is None:
@@ -94,12 +90,18 @@ def run_ai(map, max_iterations=-1, instances=50, keep=5,
         executed = [pr.clone() for pr in generations]
         for pr in executed:
             pr.execute()
-        score = SortedList(key=get_program_score_rank)
+        score = SortedList(key=lambda pr: pr.score)
         for pr in executed:
             pr.score = map.collect(pr.result)
             score.add(pr)
 
         iterations += 1
+        if (score[-1].score == len(map.rewards)):
+            print('This is the ', iterations, '. generation.\nSuccesfully collected all the ', score[-1].score,
+                  ' points.'
+                  '.\nIt is reached by program ', score[-1].original, '.',
+                  sep='')
+            return score[-1].original
         if max_iterations == -1 and score[-1].score > last_score:
             last_score = score[-1].score
             print('This is the ', iterations, '. generation.\nThe best score is ', score[-1].score,
@@ -109,6 +111,7 @@ def run_ai(map, max_iterations=-1, instances=50, keep=5,
             if cont.lower() != 'y':
                 return score[-1].original
         elif iterations == max_iterations:
+            print('Reached iteration limit.')
             return score[-1].original
 
         for i in range(instances - keep):

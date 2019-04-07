@@ -32,7 +32,7 @@ class Map:
                 if x != self.maxy - 1:
                     x += 1
             if oldX != x or oldY != y:
-                self.rewards.discard((x, y))
+                rewards.discard((x, y))
                 out += was - len(rewards)
         return out
 
