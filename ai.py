@@ -5,55 +5,85 @@ from sortedcontainers import SortedList
 from data import Program
 
 
-def mutation_invert_20_random_bits(pr):
+def to_bin(num):
+    return bin(num)[2:].zfill(8)
+
+
+def mutation_invert_20_random_bits(pr, debug=False):
     for i in range(20):
         byte_id = randint(0, 63)
         mask = 2 ** randint(0, 7)
+        if debug:
+            print('mutation invert 20 random bits - #', i + 1, ': apply XOR mask ', to_bin(mask), ' to ', byte_id,
+                  '. byte of the program: ', to_bin(pr.pr[byte_id]), ' => ', to_bin(pr.pr[byte_id] ^ mask), sep='')
         pr.pr[byte_id] ^= mask
     return pr
 
 
-def mutation_change_5_random_bytes(pr):
+def mutation_change_5_random_bytes(pr, debug=False):
     for i in range(5):
         byte_id = randint(0, 63)
-        pr.pr[byte_id] = randint(0, 255)
+        rand_num = randint(0, 255)
+        if debug:
+            print('mutation change 5 random bytes - #', i + 1, ': change ', byte_id, '. byte of the program: ',
+                  to_bin(pr.pr[byte_id]), ' => ', to_bin(rand_num), sep='')
+        pr.pr[byte_id] = rand_num
     return pr
 
 
-def mutation_swap_4_random_bytes(pr):
+def mutation_swap_4_random_bytes(pr, debug=False):
     for i in range(4):
         byte_id1 = randint(0, 63)
         byte_id2 = randint(0, 63)
+        if debug:
+            print('mutation swap 4 random bytes - #', i + 1, ': swap byte #', byte_id1, ' (', to_bin(pr.pr[byte_id1]),
+                  ') with #', byte_id2,
+                  '(', to_bin(pr.pr[byte_id2]), ') of the program', sep='')
         old = pr.pr[byte_id1]
         pr.pr[byte_id1] = pr.pr[byte_id2]
         pr.pr[byte_id1] = old
     return pr
 
 
-def mutation_invert_6_random_bytes(pr):
+def mutation_invert_6_random_bytes(pr, debug=False):
     for i in range(6):
         byte_id = randint(0, 63)
+        if debug:
+            print('mutation invert 6 random bytes - #', i + 1, ': change ', byte_id, '. byte of the program: ',
+                  to_bin(pr.pr[byte_id]), ' => ', to_bin(pr.pr[byte_id] ^ 255), sep='')
         pr.pr[byte_id] ^= 255
     return pr
 
 
-def crossover_xor_10_random_bytes(pr1, pr2):
+def crossover_xor_10_random_bytes(pr1, pr2, debug=False):
     for i in range(10):
         byte_id = randint(0, 63)
+        if debug:
+            print('crossover xor 10 random bytes - #', i + 1, ': XOR ', byte_id, '. bytes of the two programs: ',
+                  to_bin(pr1.pr[byte_id]), ' XOR ', to_bin(pr2.pr[byte_id]), ' = ',
+                  to_bin(pr1.pr[byte_id] ^ pr2.pr[byte_id]), sep='')
         pr1.pr[byte_id] ^= pr2.pr[byte_id]
     return pr1
 
 
-def crossover_copy_13_random_bytes(pr1, pr2):
+def crossover_copy_13_random_bytes(pr1, pr2, debug=False):
     for i in range(13):
         byte_id = randint(0, 63)
+        if debug:
+            print('crossover copy 13 random bytes - #', i + 1, ': Copy ', byte_id,
+                  '. byte of the second program to the first one: ',
+                  to_bin(pr1.pr[byte_id]), ' => ', to_bin(pr2.pr[byte_id]), sep='')
         pr1.pr[byte_id] = pr2.pr[byte_id]
     return pr1
 
 
-def crossover_and_8_random_bytes(pr1, pr2):
+def crossover_and_8_random_bytes(pr1, pr2, debug=False):
     for i in range(8):
         byte_id = randint(0, 63)
+        if debug:
+            print('crossover and 8 random bytes - #', i + 1, ': AND ', byte_id, '. bytes of the two programs: ',
+                  to_bin(pr1.pr[byte_id]), ' AND ', to_bin(pr2.pr[byte_id]), ' = ',
+                  to_bin(pr1.pr[byte_id] & pr2.pr[byte_id]), sep='')
         pr1.pr[byte_id] &= pr2.pr[byte_id]
     return pr1
 
@@ -79,14 +109,17 @@ def format_mutations(ms, with_ids=True):
 
 
 def run_ai(map, max_iterations=-1, instances=50, keep=5,
-           cross_chance=0.2, mutations=ALL_MUTATION, crossovers=ALL_CROSSOVER):
+           cross_chance=0.2, mutations=ALL_MUTATION, crossovers=ALL_CROSSOVER,
+           debug_generations=True, debug_operations=False, debug_from_to=False, debug_exact_steps=False):
     if map is None:
         print('Map is not set.')
         return
     last_score = -1
     generations = [Program() for pr in range(instances)]
-    iterations = 1
+    iterations = 0
     while 1:
+        if debug_generations:
+            print('Generation #' + str(iterations + 1) + ':', generations)
         executed = [pr.clone() for pr in generations]
         for pr in executed:
             pr.execute()
@@ -96,18 +129,16 @@ def run_ai(map, max_iterations=-1, instances=50, keep=5,
             score.add(pr)
 
         iterations += 1
-        if (score[-1].score == len(map.rewards)):
+        if score[-1].score == len(map.rewards):
             print('This is the ', iterations, '. generation.\nSuccesfully collected all the ', score[-1].score,
-                  ' points.'
-                  '.\nIt is reached by program ', score[-1].original, '.',
-                  sep='')
+                  ' points. \nIt is reached by program ', score[-1].original, '.', sep='')
             return score[-1].original
         if max_iterations == -1 and score[-1].score > last_score:
             last_score = score[-1].score
             print('This is the ', iterations, '. generation.\nThe best score is ', score[-1].score,
-                  '.\nIt is reached by program ', score[-1].original, '.',
-                  sep='')
-            cont = input('Should we try to find a better one? (y = yes)')
+                  '.\nIt is reached by program ', score[-1].original, '.', sep='')
+            cont = input('Should we try to find a better one? (y = yes): ')
+            print('')
             if cont.lower() != 'y':
                 return score[-1].original
         elif iterations == max_iterations:
@@ -116,9 +147,22 @@ def run_ai(map, max_iterations=-1, instances=50, keep=5,
 
         for i in range(instances - keep):
             if random() <= cross_chance:
-                generations[i] = crossovers[randint(0, len(crossovers) - 1)](score[i].original.clone(),
-                                                                             score[randint(0, instances - 1)])
+                cid = randint(0, len(crossovers) - 1)
+                target = randint(0, instances - 1)
+                if debug_operations:
+                    print('Instance #', i, ' = ' + crossovers[cid].__name__.replace('_', ' ') + '(#', i, ', #', target,
+                          ')', sep='')
+                generations[i] = crossovers[cid](score[i].original.clone(), score[target], debug_exact_steps)
+                if debug_from_to:
+                    print('FROM: ', score[i].original)
+                    print('TO: ', generations[i])
             else:
-                generations[i] = mutations[randint(0, len(mutations) - 1)](score[i].original.clone())
+                mid = randint(0, len(mutations) - 1)
+                if debug_operations:
+                    print('Instance #', i, ' = ' + mutations[mid].__name__.replace('_', ' ') + '(#', i, ')', sep='')
+                generations[i] = mutations[mid](score[i].original.clone(), debug_exact_steps)
+                if debug_from_to:
+                    print('FROM: ', score[i].original)
+                    print('TO: ', generations[i])
         for i in range(instances - keep, instances):
             generations[i] = score[i].original.clone()

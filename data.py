@@ -3,6 +3,9 @@ from random import randint
 
 class Map:
     def __init__(self, lines):
+        if type(lines) == str:
+            with open(lines, 'r') as f:
+                lines = f.readlines()
         line = (lines[0].split(' ')) + (lines[1].split(' '))
         self.maxx, self.maxy, self.x, self.y = int(line[0]), int(line[1]), int(line[2]), int(line[3])
         self.rewards = set()
@@ -83,7 +86,7 @@ class Program:
         return Program(self)
 
     def __str__(self):
-        return str(self.pr)
+        return str([str(bin(d))[2:].zfill(8) for d in self.pr]).replace("'", '').replace(',', '')
 
     def __repr__(self):
-        return str(self.pr)
+        return self.__str__()
