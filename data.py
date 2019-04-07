@@ -3,9 +3,12 @@ from random import randint
 
 class Map:
     def __init__(self, lines):
-        line = lines[0].split(' '), lines[1].split(' ')
+        line = (lines[0].split(' ')) + (lines[1].split(' '))
         self.maxx, self.maxy, self.x, self.y = int(line[0]), int(line[1]), int(line[2]), int(line[3])
-        self.rewards = set([tuple(d) for d in lines[2].split(' ')])
+        self.rewards = set()
+        for d in lines[2].split(' '):
+            d2 = d.split(';')
+            self.rewards.add((int(d2[0]), int(d2[1])))
 
     def collect(self, dirs):
         out = 0
@@ -44,7 +47,7 @@ class Program:
             self.pr = [int(n, 2) for n in pr.split(' ')]
         else:
             self.original = pr
-            self.pr = pr[:]
+            self.pr = pr.pr[:]
 
     def has_next(self):
         return self.ex_lines < 500 and self.pos < 64
@@ -77,7 +80,10 @@ class Program:
         self.result = result
 
     def clone(self):
-        return Program(self.pr)
+        return Program(self)
 
     def __str__(self):
+        return str(self.pr)
+
+    def __repr__(self):
         return str(self.pr)
