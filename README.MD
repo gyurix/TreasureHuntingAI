@@ -11,4 +11,4 @@
 ## Automatic testing
 
 - Run `pytest -vv --durations=0 tests.py`
-- My test results can be found at `testResults.txt`
+- My test results can be found at `TEST_RESULTS.MD`
